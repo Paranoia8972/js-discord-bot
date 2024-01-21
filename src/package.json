@@ -11,9 +11,14 @@
   "license": "ISC",
   "dependencies": {
     "@discordjs/rest": "^2.2.0",
+    "axios": "^1.6.3",
     "chalk": "^4.1.2",
     "discord-api-types": "^0.37.67",
+    "discord-rpc": "^4.0.1",
     "discord.js": "^14.14.1",
-    "dotenv": "^16.3.1"
+    "dotenv": "^16.3.1",
+    "mongodb": "^6.3.0",
+    "mongoose": "^8.1.0",
+    "puppeteer": "^21.6.1"
   }
 }
