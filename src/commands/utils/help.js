@@ -22,7 +22,7 @@ module.exports = {
     ];
 
     const formatString = (str) =>
-      `${str[0].toUpperCase()}${str.slice(1).toLowerCase()}`;
+      str ? `${str[0].toUpperCase()}${str.slice(1).toLowerCase()}` : "";
 
     const categories = directories.map((dir) => {
       const getCommands = interaction.client.commands
@@ -55,11 +55,12 @@ module.exports = {
           .setDisabled(state)
           .addOptions(
             categories.map((cmd) => {
+              const directory = cmd.directory || "utils";
               return {
-                label: cmd.directory,
-                value: cmd.directory.toLowerCase(),
-                description: `Commands from ${cmd.directory} category.`,
-                emoji: emojis[cmd.directory.toLowerCase() || null],
+                label: directory,
+                value: directory.toLowerCase(),
+                description: `Commands from ${directory} category.`,
+                emoji: emojis[directory.toLowerCase() || null],
               };
             })
           )
@@ -85,6 +86,11 @@ module.exports = {
       const category = categories.find(
         (x) => x.directory.toLowerCase() === directory
       );
+
+      if (!category) {
+        console.log(`Category not found for directory: ${directory}`);
+        return;
+      }
 
       const categoryEmbed = new EmbedBuilder()
         .setTitle(`${formatString(directory)} Commands`)

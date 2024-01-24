@@ -3,17 +3,18 @@ const { token } = process.env;
 const GiveawaysManager = require("./giveaway");
 const { Client, Collection, GatewayIntentBits } = require("discord.js");
 const fs = require("fs");
+const counting = require("./Schemas/countingSchema");
 // const axios = require("axios");
 
 const client = new Client({
-	intents: [
-		GatewayIntentBits.Guilds,
-		GatewayIntentBits.GuildMessages,
-		GatewayIntentBits.MessageContent,
-		GatewayIntentBits.GuildMembers,
+  intents: [
+    GatewayIntentBits.Guilds,
+    GatewayIntentBits.GuildMessages,
+    GatewayIntentBits.MessageContent,
+    GatewayIntentBits.GuildMembers,
     GatewayIntentBits.GuildMessageReactions,
     GatewayIntentBits.DirectMessages,
-	],
+  ],
 });
 client.commands = new Collection();
 client.commandArray = [];
@@ -111,6 +112,34 @@ client.giveawayManager = new GiveawaysManager(client, {
   },
 });
 // Giveaway end
+
+// Counting
+client.on("messageCreate", async (message) => {
+  if (!message.guild) return;
+  if (message.author.bot) return;
+  
+  const data = await counting.findOne({ Guild: message.guild.id });
+    if (!data) return;
+  else {
+    if (message.channel.id !== data.channel) return;
+
+    const number = Number(message.content);
+
+    if (number !== data.Number) {
+      return message.react(`❌`);
+    } else if (data.LastUser === message.author.id) {
+      message.react(`❌`);
+      await message.reply(`❌ You Can Not Count More Than Once In A Row!`);
+    } else {
+      await message.react(`✅`);
+
+      data.LastUser = message.author.id;
+      data.Number++;
+      await data.save();
+    }
+  }
+});
+// Counting end
 
 // Chat Bot logic
 // RAPIDAPI BARD API ISNT WORKING ATM
