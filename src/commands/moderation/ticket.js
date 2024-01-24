@@ -30,10 +30,21 @@ module.exports = {
                     .setMinValues(1)
                     .addOptions(
                         {
-                            label: 'Create your ticket',
-                            description: 'Click to begin the ticket creation process',
-                            value: 'createTicket'
-                        }
+                            label: "🌐 General Support",
+                            value: "Subject: General Support"
+                        },
+                        {
+                            label: "🛠️ Moderation Support",
+                            value: "Subject: Moderation Support"
+                        },
+                        {
+                            label: "🥶 Server Support",
+                            value: "Subject: Server Support"
+                        },
+                        {
+                            label: "💸 Other",
+                            value: "Subject: Other"
+                        },
                     )
                 );
  
