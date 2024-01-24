@@ -24,8 +24,7 @@ module.exports = {
     ),
 
   async execute(interaction, client) {
-    //! Permissions check
-    //* embed1 = permission err embed
+// Permission Check
     const embed1 = new EmbedBuilder()
       .setColor("Red")
       .setDescription(

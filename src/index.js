@@ -1,17 +1,20 @@
 require("dotenv").config();
 const { token } = process.env;
-const {
-  Client,
-  Collection,
-  GatewayIntentBits,
-  ModalBuilder,
-  TextInputBuilder,
-  TextInputStyle,
-  ActionRowBuilder,
-} = require("discord.js");
+const GiveawaysManager = require("./giveaway");
+const { Client, Collection, GatewayIntentBits } = require("discord.js");
 const fs = require("fs");
+// const axios = require("axios");
 
-const client = new Client({ intents: GatewayIntentBits.Guilds });
+const client = new Client({
+	intents: [
+		GatewayIntentBits.Guilds,
+		GatewayIntentBits.GuildMessages,
+		GatewayIntentBits.MessageContent,
+		GatewayIntentBits.GuildMembers,
+    GatewayIntentBits.GuildMessageReactions,
+    GatewayIntentBits.DirectMessages,
+	],
+});
 client.commands = new Collection();
 client.commandArray = [];
 
@@ -24,151 +27,152 @@ for (const folder of functionFolders) {
     require(`./functions/${folder}/${file}`)(client);
 }
 
-//ticket system
-const ticketSchema = require("./Schemas/ticketSchema");
-const { info } = require("console");
-client.on("interactionCreate", async (interaction) => {
-  if (interaction.isButton()) return;
-  if (interaction.isChatInputCommand()) return;
+// Welcome
+client.on("guildMemberAdd", async (member) => {
+  const channelID = await process.env.channelID;
+  const channel = member.guild.channels.cache.get(channelID);
+  const message = `**Welcome to OnThePixel.net, ${member}!**`;
 
-  const modal = new ModalBuilder()
-    .setTitle("Provide us with more information.")
-    .setCustomId("modal");
+  if (channelID == null) return;
 
-  const reason = new TextInputBuilder()
-    .setCustomId("reason")
-    .setRequired(true)
-    .setLabel("The reason for this ticket?")
-    .setPlaceholder("Give us a reason for opening this ticket")
-    .setStyle(TextInputStyle.Short);
+  channel.send(message);
+});
+// Welcome end
 
-  const info = new TextInputBuilder()
-    .setCustomId("info")
-    .setRequired(true)
-    .setLabel("Provide us the most important info.")
-    .setPlaceholder("You must enter a description")
-    .setStyle(TextInputStyle.Paragraph);
+// Auto role
+client.on("guildMemberAdd", async (member) => {
+  const role = process.env.roleID;
+  const giveRole = await member.guild.roles.cache.get(role);
 
-    const firstActionRow = new ActionRowBuilder().addComponents(reason);
-    const secondActionRow = new ActionRowBuilder().addComponents(info);
+  member.roles.add(giveRole);
+});
+// Auto role end
 
-modal.addComponents(firstActionRow, secondActionRow);
+// Reaction role
+const reactions = require("./Schemas/reactionRoleSchema");
+client.on("messageReactionAdd", async (reaction, user) => {
+  if (!reaction.message.guildId) return;
+  if (user.bot) return;
 
-  let choices;
-  if (interaction.isSelectMenu()) {
-    choices = interaction.values;
+  let cID = `<:${reaction.emoji.name}:${reaction.emoji.id}>`;
+  if (!reaction.emoji.id) cID = reaction.emoji.name;
 
-    const result = choices.join("");
+  const data = await reactions.findOne({
+    Guild: reaction.message.guildId,
+    Message: reaction.message.id,
+    Emoji: cID,
+  });
 
-    if (interaction.isSelectMenu()) {
-      choices = interaction.values;
-      const result = choices.join("");
+  if (!data) return;
 
-      try {
-        const data = await ticketSchema
-          .findOne({ Guild: interaction.guild.id })
-          .exec();
-        const filter = { Guild: interaction.guild.id };
-        const update = { Ticket: result };
+  const guild = await client.guilds.cache.get(reaction.message.guildId);
+  const member = await guild.members.cache.get(user.id);
 
-        const value = await ticketSchema.updateOne(filter, update, {
-          new: true,
-        });
-        console.log(value);
-      } catch (err) {
-        console.error(err);
-      }
-    }
-  }
-
-  if (!interaction.isModalSubmit()) {
-    interaction.showModal(modal);
+  try {
+    await member.roles.add(data.Role);
+  } catch (e) {
+    return;
   }
 });
 
-client.on("interactionCreate", async (interaction) => {
-  if (interaction.isModalSubmit()) {
-    if (interaction.customId == "modal") {
-      try {
-        const data = await ticketSchema
-          .findOne({ Guild: interaction.guild.id })
-          .exec();
-        const reasonInput = interaction.fields.getTextInputValue("reason");
-        const infoInput = interaction.fields.getTextInputValue("info");
+client.on("messageReactionRemove", async (reaction, user) => {
+  if (!reaction.message.guildId) return;
+  if (user.bot) return;
 
-        const posChannel = await interaction.guild.channels.cache.find(
-          (c) => c.name === `ticket-${interaction.user.id}`
-        );
-        if (posChannel)
-          return await interaction.reply({
-            content: `You already have a ticket open - ${posChannel}`,
-            ephemeral: true,
-          });
+  let cID = `<:${reaction.emoji.name}:${reaction.emoji.id}>`;
+  if (!reaction.emoji.id) cID = reaction.emoji.name;
 
-        const category = data.Channel;
+  const data = await reactions.findOne({
+    Guild: reaction.message.guildId,
+    Message: reaction.message.id,
+    Emoji: cID,
+  });
 
-        const embed = new EmbedBuilder()
-          .setColor("Blue")
-          .setTitle(`${interaction.user.id}'s Ticket`)
-          .setDescription(
-            "Welcome to your ticket! Please wait while the staff team review the details."
-          )
-          .addFields({ name: `Reason`, value: `${reasonInput}` })
-          .addFields({ name: `info`, value: `${infoInput}` })
-          .addFields({ name: `Type`, value: `${data.Ticket}` })
-          .setFooter({ text: `${interaction.guild.name}'s tickets.` });
+  if (!data) return;
 
-        const button = new ActionRowBuilder().addComponents(
-          new ButtonBuilder()
-            .setCustomId("ticket")
-            .setLabel("🗑️ Close Ticket")
-            .setStyle(ButtonStyle.Danger)
-        );
+  const guild = await client.guilds.cache.get(reaction.message.guildId);
+  const member = await guild.members.cache.get(user.id);
 
-        let channel = await interaction.guild.channels.create({
-          name: `ticket-${interaction.user.id}`,
-          type: ChannelType.GuildText,
-          parent: `${category}`,
-        });
-
-        let msg = await channel.send({
-          embeds: [embed],
-          components: [button],
-        });
-        await interaction.reply({
-          content: `Your ticket is now open inside of ${channel}.`,
-          ephemeral: true,
-        });
-
-        const collector = msg.createMessageComponentCollector();
-
-        collector.on("collect", async (i) => {
-          await channel.delete();
-
-          const dmEmbed = new EmbedBuilder()
-            .setColor("Blue")
-            .setTitle("Your ticket has been closed")
-            .setDescription(
-              "Thanks for contacting us! If you need anything else just feel free to open up another ticket!"
-            )
-            .setTimestamp();
-
-          await interaction.member.send({ embeds: [dmEmbed] }).catch((err) => {
-            return;
-          });
-        });
-      } catch (err) {
-        console.error(err);
-        await interaction.reply({
-          content:
-            "An error occurred while processing your ticket. Please try again later or contact support.",
-          ephemeral: true,
-        });
-      }
-    }
+  try {
+    await member.roles.remove(data.Role);
+  } catch (e) {
+    return;
   }
 });
-// Ticket end
+// Reaction role end
+
+// Giveaway
+client.giveawayManager = new GiveawaysManager(client, {
+  default: {
+    botsCanWin: false,
+    embedColor: "#a200ff",
+    embedColorEnd: "#550485",
+    reaction: "🎉",
+  },
+});
+// Giveaway end
+
+// Chat Bot logic
+// RAPIDAPI BARD API ISNT WORKING ATM
+
+// client.on("messageCreate", async (message) => {
+//   if (message.author.bot) return;
+
+//   await message.channel.sendTyping();
+
+//   let input = {
+//     method: 'GET',
+//     url: 'https://google-bard1.p.rapidapi.com/',
+//     headers: {
+//       message: message.content,
+//       'X-RapidAPI-Key': '', // YOUR OWN RAPIDAPI KEY
+//       'X-RapidAPI-Host': 'google-bard1.p.rapidapi.com'
+//     },
+//   };
+//   try {
+//     const output = await axios.request(input);
+//     const response = output.data.response;
+
+//     if (response.length > 2000) {
+//       const chunks = response.match(/.{1,2000}/g);
+
+//       for (let i = 0; i < chunks.length; i++) {
+//         message.author.send(chunks[i]).catch((err) => {
+//           console.error(err);
+//           message.author
+//             .send(
+//               "I'm heaving trouble finding that request. Because I am an AI on Discord, I don't have time to process long requests."
+//             )
+//             .catch((err) => {
+//               console.error(err);
+//             });
+//         });
+//       }
+//     } else {
+//       await message.author.send(response).catch((err) => {
+//         console.error(err);
+//         message.author
+//           .send(
+//             "I'm heaving trouble finding that request. Because I am an AI on Discord, I don't have time to process long requests."
+//           )
+//           .catch((err) => {
+//             console.error(err);
+//           });
+//       });
+//     }
+//   } catch (e) {
+//     console.error(e);
+//     message.author
+//       .send(
+//         "I'm heaving trouble finding that request. Because I am an AI on Discord, I don't have time to process long requests."
+//       )
+//       .catch((err) => {
+//         console.error(err);
+//       });
+//   }
+// });
+
+// Chat bot logic end
 
 client.handleEvents();
 client.handleCommands();

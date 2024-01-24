@@ -4,16 +4,18 @@
   "description": "The official OnThePixel.net Discord Bot",
   "main": "index.js",
   "scripts": {
-    "test": "node index.js"
+    "test": "node src/index.js"
   },
   "keywords": [],
   "author": "Paranoia8972",
   "license": "ISC",
   "dependencies": {
     "@discordjs/rest": "^2.2.0",
-    "axios": "^1.6.3",
+    "axios": "^1.6.5",
     "chalk": "^4.1.2",
     "discord-api-types": "^0.37.67",
+    "discord-giveaways": "^6.0.1",
+    "discord-html-transcripts": "^3.2.0",
     "discord-rpc": "^4.0.1",
     "discord.js": "^14.14.1",
     "dotenv": "^16.3.1",
