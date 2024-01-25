@@ -9,7 +9,7 @@ const {
 module.exports = {
     data: new SlashCommandBuilder()
         .setName("mc-status")
-        .setDescription("Check the status of a minecraft server!"),
+        .setDescription("Check the status of OnThePixel.net!"),
     async execute(interaction) {
         const {
             options
