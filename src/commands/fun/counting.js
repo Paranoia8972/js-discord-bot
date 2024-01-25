@@ -79,9 +79,7 @@ module.exports = {
 
           const embed = new EmbedBuilder()
             .setColor("Red")
-            .setDescription(
-              `The Counting System Has Been Disabled!`
-            );
+            .setDescription(`The Counting System Has Been Disabled!`);
 
           await interaction.reply({ embeds: [embed], ephemeral: true });
         }
