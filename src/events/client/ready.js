@@ -22,10 +22,12 @@ module.exports = {
 
     console.log(
       chalk.green(
-        `Ready! ${chalk.blueBright(client.user.tag)} is logged in and online.`,
+        `${chalk.blueBright(client.user.tag)} is logged in and online.`,
       ),
     );
-
+    
+    console.log("Ready for use!")
+    
     const activities = [
       "on OnThePixel.net",
       "dc.onthepixel.net",
