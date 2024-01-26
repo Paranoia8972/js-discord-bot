@@ -6,22 +6,25 @@ const chalk = require("chalk");
 module.exports = {
   name: "ready",
   once: true,
-  async execute(client) {
-    console.log(
-      chalk.green(
-        `Ready! ${chalk.blueBright(client.user.tag)} is logged in and online.`
-      )
-    );
 
+  async execute(client) {
     if (!mongoURL) return;
 
-    await mongoose.connect(mongoURL || "");
-
-    if (mongoose.connect) {
+    try {
+      await mongoose.connect(mongoURL, {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+      });
       console.log(chalk.green(`Connected to the Database!`));
-    } else {
-      console.log(chalk.red(`Connection to Database failed!`));
+    } catch (error) {
+      console.log(chalk.red(`Connection to Database failed! Error: ${error}`));
     }
+
+    console.log(
+      chalk.green(
+        `Ready! ${chalk.blueBright(client.user.tag)} is logged in and online.`,
+      ),
+    );
 
     const activities = [
       "on OnThePixel.net",
