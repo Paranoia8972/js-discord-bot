@@ -19,10 +19,10 @@ const client = new Client({
 client.commands = new Collection();
 client.commandArray = [];
 
-const functionFolders = fs.readdirSync(`./functions`);
+const functionFolders = fs.readdirSync(`src/functions`);
 for (const folder of functionFolders) {
   const functionFiles = fs
-    .readdirSync(`./functions/${folder}`)
+    .readdirSync(`src/functions/${folder}`)
     .filter((file) => file.endsWith(".js"));
   for (const file of functionFiles)
     require(`./functions/${folder}/${file}`)(client);
