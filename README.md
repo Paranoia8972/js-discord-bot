@@ -1,6 +1,6 @@
 # PixelBot
 
-🤖 This is the official OnThePixel.net Discord Bot.
+🤖 This is the official OnThePixel.net Discord Bot. If you are looking for a customizable version with a webinterface, you might want to try [this](https://github.com/Paranoia8972/Discord-Bot).
 
 [![MIT License](https://img.shields.io/badge/License-MIT-green.svg)](https://choosealicense.com/licenses/mit/)
 
