@@ -21,7 +21,11 @@ module.exports = {
     ),
 
   async execute(interaction) {
-    if (!interaction.member.permissions.has(PermissionsBitField.Flags.Administrator)) {
+    if (
+      !interaction.member.permissions.has(
+        PermissionsBitField.Flags.Administrator
+      )
+    ) {
       await interaction.reply({
         content: "You do not have permission to use this command.",
         ephemeral: true,
@@ -47,7 +51,7 @@ module.exports = {
             .filter(
               (message) =>
                 message.createdTimestamp >= fourteenDaysAgo &&
-                message.author.id === userToDelete.id
+                (userToDelete ? message.author.id === userToDelete.id : true)
             )
             .first(amount);
           return interaction.channel.bulkDelete(filteredMessages);
