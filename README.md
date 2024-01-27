@@ -49,7 +49,7 @@ npm run test
 or
 
 ```bash
-node index.js
+node src/index.js
 ```
 
 ## Documentation
