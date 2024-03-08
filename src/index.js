@@ -28,26 +28,19 @@ for (const folder of functionFolders) {
     require(`./functions/${folder}/${file}`)(client);
 }
 
-// Welcome
+// Welcome + Auto role
 client.on("guildMemberAdd", async (member) => {
   const channelID = await process.env.channelID;
   const channel = member.guild.channels.cache.get(channelID);
-  const message = `**Welcome to OnThePixel.net, ${member}!**`;
-
+  const message = `:waveanimated: **Welcome to OnThePixel.net, ${member}!**`;
   if (channelID == null) return;
-
   channel.send(message);
-});
-// Welcome end
-
-// Auto role
-client.on("guildMemberAdd", async (member) => {
+    
   const role = process.env.roleID;
   const giveRole = await member.guild.roles.cache.get(role);
-
   member.roles.add(giveRole);
 });
-// Auto role end
+// Welcome + Auto role end
 
 // Reaction role
 const reactions = require("./Schemas/reactionRoleSchema");
