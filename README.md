@@ -1,3 +1,7 @@
+# This repository has been archived. I made a rewrite in Go.
+# The code for the new bot can be viewed at [Paranoia8972/PixelBot](https://github.com/Paranoia8972/PixelBot).
+
+
 # PixelBot
 
 🤖 This is the official OnThePixel.net Discord Bot. If you are looking for a customizable version with a webinterface, you might want to try [this](https://github.com/Paranoia8972/Discord-Bot).
